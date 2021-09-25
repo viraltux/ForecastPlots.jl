@@ -25,7 +25,7 @@ A CF object
 
 # Examples
 ```julia-repl
-julia> x = rand(100);
+x = rand(100);
 pacf(x);
 pacf(x; plot=false)
 20×2 Matrix{Float64}:
@@ -72,7 +72,7 @@ function pacf(x::AbstractVector{<:Real};
     end
 
     if (type::String == "real") 
-        pac = pacf_real(x; ag, alpha)
+        pac = pacf_real(x; lag, alpha)
         plot && display(cf_gr((cres=pac, N=N, type="pacf_real", lag, alpha, ci, auto=true, kw...)))
         return pac
     end
