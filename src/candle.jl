@@ -20,17 +20,17 @@ Candle plot
 using MarketData
 
 x = values(yahoo(:INTC))[:,1:4][1001:1160,:]
-candle(x; 
+candle(x)
 candle(x,now()-Day(30):Day(1):now(); colors=(:white,:black), title = "INTC")
 ```
 """
-function candle(x::Matrix{<:Real},t=1:size(x,1), args...; colors=(:green,:red), kw...)
+function candle(x::Matrix{<:Real},t=1:size(x,1); colors=(:green,:red), kw...)
 
     @assert length(colors) == 2 "Two colors required"
     @assert eltype(colors) == Symbol "'colors' must be symbols e.g. (:white,:black)"
     @assert colors[1] != colors[2] "'colors' must be different"
     
-    plot(t,repeat([missing],size(x,1)),args...;labels=nothing,kw...)
+    plot(t,repeat([missing],size(x,1));labels=nothing,kw...)
 
     ttype = eltype(t) <: TimeType
     t = ttype ? Dates.value.(t) : t

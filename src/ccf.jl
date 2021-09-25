@@ -31,113 +31,21 @@ Cros-correlation vector with an optional plot
 x1 = rand(100);
 x2 = circshift(x1,6);
 ccf(x1, x2; type="cor");
-ccf(x1, x2; type="cor", plot = false);
+ccf(x1, x2; type="cor", plot = false)
 41-element Vector{Float64}:
   0.09861519494432992
  -0.04384418688776631
  -0.1900182513825246
+  [...]
 ```
 """
-ccf
-
-@userplot CF_GR
-
-@recipe function f(cp::CF_GR)
-
-    # plot configuration
-    legend:= false
-
-    titlefont:= font(8, "Courier")
-    xtickfont:= font(3, "Courier")
-    ytickfont:= font(3, "Courier")
-    yguidefont:= font(5, "Courier")
-    xguidefont:= font(5, "Courier")
-
-    N = cp.args[1].N
-    if split(cp.args[1].type,'_')[1] == "pacf"
-        type = (cp.args[1].type) == "pacf_step" ? "Stepwise PACF" : "Real PACF"
-        type = (cp.args[1].type) == "pacf_stepwise-real" ? "Stepwise and Real PACF   |s|r|" : type
-        auto_prefix = ""
-    else
-        type = (cp.args[1].type == "cor") ? "Correlation" : "Covariance"
-        auto_prefix = cp.args[1].auto ? "Auto-" : "Cross-"
-    end
-
-    yguide := auto_prefix*type
-    xguide := "Lag"
-    
-    # Center ticks
-    lr = length(cp.args[1].cres)
-    gap = div(lr,11)
-    mp = div(lr+1,2)
-    rs = mp:gap:lr
-    ls = mp-gap:-gap:1
-
-    if cp.args[1].auto
-        xticks := 1:gap:lr
-    else
-        xt = vcat(reverse(collect(ls)),collect(rs))
-        xticks := (xt, xt .- xt[div(end+1,2)])
-    end
-    
-    @series begin
-        seriestype := :sticks
-        ymirror := false
-        guide_position := :left
-        linewidth := 100/(cp.args[1].lag+1)
-        
-        collect(1:size(cp.args[1].cres)[1]+1) .- ((ndims(cp.args[1].cres) == 2) ? .1 : 0),
-        ndims(cp.args[1].cres) == 2 ? cp.args[1].cres[:,1] : cp.args[1].cres
-    end
-
-    if ndims(cp.args[1].cres) == 2
-        @series begin
-            seriestype := :sticks
-            ymirror := false
-            guide_position := :left
-            linewidth := 100/(cp.args[1].lag+1)
-
-            collect(1:size(cp.args[1].cres)[1]+1) .+ .1,
-            cp.args[1].cres[:,2]
-        end
-    end
-    
-    if (cp.args[1].type == "cor") | (split(cp.args[1].type,'_')[1] == "pacf")
-        lg = cp.args[1].lag
-        a1 = cp.args[1].alpha[1]; c1 = cp.args[1].ci[1]
-        a2 = cp.args[1].alpha[2]; c2 = cp.args[1].ci[2]
-        dc = c2-c1
-
-        @series begin
-            seriestype := :hline
-            seriescolor := :black
-            linealpha := 0.5
-            linestyle := :dash
-            [-c1,c1]
-        end
-
-        @series begin
-            seriestype := :hline
-            seriescolor := :black
-            linealpha := 0.5
-            linestyle := :dot
-            ax = cp.args[1].auto ? lg : 2*lg + 1
-            annotations := 
-                [(ax,c1+dc/8,string("CI %",a1*100),font(3, "Courier")),
-                 (ax,c2+dc/8,string("CI %",a2*100),font(3, "Courier"))]
-            [-c2,c2]
-        end
-    end
-    
-end
-
-
 function ccf(x1::AbstractVector{<:A},
              x2::AbstractVector{<:B};
              type::String = "cor",
              lag::Integer = Integer(ceil(10*log10(length(x1)))),
              alpha::Tuple{AbstractFloat,AbstractFloat} = (0.95,0.99),
-             plot::Bool = true) where {A<:Real, B<:Real}
+             plot::Bool = true,
+             kw...) where {A<:Real, B<:Real}
 
     N = length(x1)
     @assert N == length(x2) "Vectors should be of equal size"
@@ -199,9 +107,82 @@ function ccf(x1::AbstractVector{<:A},
     ci2 = z2*fse(N)
     ci = (ci1,ci2)
 
-    plot && display(cf_gr((cres, N=N, type, lag, alpha, ci, auto)))
-    #CF(ccf_res, N, type, lag, alpha, ci, auto, call)
+    plot && display(cf_gr((cres, N=N, type, lag, alpha, ci, auto); kw...))
+
     cres
 
 end
+
+
+function cf_gr(args; kw...)
+
+    # plot configuration
+
+    titlefont = font(8, "Courier")
+    xtickfont = font(3, "Courier")
+    ytickfont = font(3, "Courier")
+    yguidefont = font(5, "Courier")
+    xguidefont = font(5, "Courier")
+
+    N = args.N
+    if split(args.type,'_')[1] == "pacf"
+        type = (args.type) == "pacf_step" ? "Stepwise PACF" : "Real PACF"
+        type = (args.type) == "pacf_stepwise-real" ? "Stepwise and Real PACF   |s|r|" : type
+        auto_prefix = ""
+    else
+        type = (args.type == "cor") ? "Correlation" : "Covariance"
+        auto_prefix = args.auto ? "Auto-" : "Cross-"
+    end
+
+    yguide = auto_prefix*type
+    xguide = "Lag"
+    
+    # Center ticks
+    lr = length(args.cres)
+    gap = div(lr,11)
+    mp = div(lr+1,2)
+    rs = mp:gap:lr
+    ls = mp-gap:-gap:1
+
+    if args.auto
+        xticks = 1:gap:lr
+    else
+        xt = vcat(reverse(collect(ls)),collect(rs))
+        xticks = (xt, xt .- xt[div(end+1,2)])
+    end
+
+    plot(collect(1:size(args.cres)[1]+1) .- ((ndims(args.cres) == 2) ? .1 : 0),
+         ndims(args.cres) == 2 ? args.cres[:,1] : args.cres;
+         seriestype = :sticks, linewidth = 100/(args.lag+1),
+         legend = :none, kw...)
+
+    if ndims(args.cres) == 2
+
+        plot!(collect(1:size(args.cres)[1]+1) .+ .1,
+              args.cres[:,2];
+              seriestype = :sticks, linewidth = 100/(args.lag+1))
+        
+    end
+    
+    if (args.type == "cor") | (split(args.type,'_')[1] == "pacf")
+        lg = args.lag
+        a1 = args.alpha[1]; c1 = args.ci[1]
+        a2 = args.alpha[2]; c2 = args.ci[2]
+        dc = c2-c1
+
+        plot!([-c1,c1]; seriestype = :hline, seriescolor = :black, linealpha = 0.5, linestyle = :dash)
+        
+        ax = args.auto ? lg : 2*lg + 1
+        annotations = 
+            [(ax,c1+dc/8,string("CI %",a1*100),font(3, "Courier")),
+             (ax,c2+dc/8,string("CI %",a2*100),font(3, "Courier"))]
+
+        plot!([-c2,c2]; seriestype = :hline, seriescolor = :black,
+              linealpha = 0.5, linestyle = :dot, annotations)
+              
+        
+    end
+    
+end
+
 
