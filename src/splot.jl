@@ -29,7 +29,7 @@ splot(rand(120),"day"; plot=false)
 ```
 """
 function splot(x::AbstractVector{<:T},
-               labels::Union{Integer, String, AbstractVector{String}} = 12, args...;
+               labels::Union{Integer, String, AbstractVector{String}} = 12;
                plot::Bool = true, kw...) where T<:Real
 
     day_labels = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
@@ -84,11 +84,8 @@ function splot(x::AbstractVector{<:T},
     m = reshape(m,:,1)
         
     if plot
-
-        Plots.plot(xs, args...;
-                   legend=false, grid = false, xticks, kw...)
-        display(Plots.plot!(m, args...;
-                    legend=false, grid = false, kw...))
+        Plots.plot(xs; legend=false, grid = false, xticks, kw...)
+        display(Plots.plot!(m; legend=false, grid = false, kw...))
     end
 
     return reshape(xs,:,season)[1:end-1,:]

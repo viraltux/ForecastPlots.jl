@@ -15,35 +15,24 @@ Sesonal decomposition plot
 
 # Examples
 ```julia-repl
-dplot(rand(100,3))
-dplot(rand(100,3), ["數據","趨勢","季節性","剩餘"])
+dplot(randn(100,3))
+dplot(randn(100,3); labels = ["數據","趨勢","季節性","剩餘"])
 ```
 """
-dplot
-
-@userplot DPlot
-
-@recipe function f(dp::DPlot; dlabels = ["Data","Trend","Seasonality","Remainder"])
+function dplot(x::Matrix{<:T}, t=1:size(x,1);
+               dlabels = ["Data","Trend","Seasonality","Remainder"], kw...) where T<: Real
 
     @assert length(dlabels) == 4 "Four labels needed for 'Data','Trend','Seasonality' and 'Remainder'"
-    @assert dp.args[1] isa Matrix{<:Real} "Numerical Matrix with columns expected"
-    @assert size(dp.args[1],2) == 3 "Numerical Matrix with columns expected" 
+    @assert x isa Matrix{<:Real} "Numerical Matrix with columns expected"
+    @assert size(x,2) == 3 "Numerical Matrix with columns expected" 
     
-    seasonality = dp.args[1][:,1]
-    trend = dp.args[1][:,2]
-    remainder = dp.args[1][:,3]
+    seasonality = x[:,1]
+    trend = x[:,2]
+    remainder = x[:,3]
 
-    # subplots configuration
-    legend:= false
-    grid:= false
-    layout := @layout [Data
-                       Seasonal
-                       Trend
-                       Remainder]
-    
-    xtickfont:= font(3, "Courier")
-    ytickfont:= font(3, "Courier")
-    yguidefont:= font(5, "Courier")
+    xtickfont = font(3, "Courier")
+    ytickfont = font(3, "Courier")
+    yguidefont = font(5, "Courier")
 
     # reference bar
     a,b = extrema(skipmissing(values(seasonality.+
@@ -54,92 +43,73 @@ dplot
     a,b = extrema(skipmissing(values(remainder))); hr = b-a
     mh = min(hd,hs,ht,hr)
 
-    inset_subplots := [(1, bbox(-0.012, 0, 0.01, 1.0, :left)),
+    inset_subplots  = [(1, bbox(-0.012, 0, 0.01, 1.0, :left)),
                        (2, bbox(-0.012, 0, 0.01, 1.0, :left)),
                        (3, bbox(-0.012, 0, 0.01, 1.0, :left)),
                        (4, bbox(-0.012, 0, 0.01, 1.0, :left))]
 
-    @series begin
-        subplot := 1
-        yguide := dlabels[1]
-        xguide := " "
-        xaxis := nothing
-        bottom_margin := -7Plots.mm    
-        seasonality .+ trend .+ remainder
-    end
+    layout = @layout [Data
+                      Seasonal
+                      Trend
+                      Remainder]
 
-    @series begin
-        subplot := 2
-        title := " "
-        yguide := dlabels[2]
-        xguide := " "
-        xaxis := nothing
-        #ymirror:=true
-        #guide_position:=:left
-        bottom_margin := -7Plots.mm    
-        trend
-    end
+    rect(w, h, x, y) = Shape(x .+ [0, w, w, 0, 0], y .+ [0, 0, h, h, 0])
 
-    @series begin
-        subplot := 3
-        title := " "
-        yguide := dlabels[3]
-        xguide := " "
-        xaxis := nothing
-        seriestype := :sticks
-        bottom_margin := -7Plots.mm    
-        seasonality
-    end
+    ttype = eltype(t) <: TimeType
+    sbd = 10
+    sbx = ttype ? Dates.value(t[1]) - (sbd+1)*Dates.value(t[2]-t[1])  : -sbd
+    sbw = ttype ? sbd*Dates.value(t[2]-t[1])÷4 : 10÷4
 
-    @series begin
-        subplot := 4
-        title := " "
-        yguide := dlabels[4]
-        seriestype := :sticks
-        #bottom_margin:=0Plots.mm    
-        #ymirror:=true
-        #guide_position:=:left
-        remainder
-    end
+    sbc = :gray
 
-    # Scale Bars
-    @series begin
-        subplot := 5
-        title := " "
-        background_color_inside := nothing
-        framestyle := :none
-        seriestype := :bar
-        ylims := (0,hd)
-        mh:mh
-    end
+    p1 = plot(t,seasonality .+ trend .+ remainder;
+              yguide = dlabels[1], xguide = "", 
+              ytickfont, yguidefont,
+              bottom_margin = -5Plots.mm,
+              legend = false, grid = false,
+              kw...,
+              xticks = false)
 
-    @series begin
-        subplot := 6
-        title := " "
-        background_color_inside := nothing
-        framestyle := :none
-        seriestype := :bar
-        ylims := (0,ht)
-        mh:mh
-    end
-    
-    @series begin
-        subplot := 7
-        title := " "
-        framestyle := :none
-        seriestype := :bar
-        ylims := (0,hs)
-        mh:mh
-    end
+    p1 = plot!(rect(sbw, hr,sbx, minimum(seasonality .+ trend .+ remainder));
+               seriescolor = :grey,
+               linewidth = 0,
+               label = nothing)
 
-    @series begin
-        subplot := 8
-        title := " "
-        framestyle := :none
-        seriestype := :bar
-        ylims := (0,hr)
-        mh:mh
-    end
+    p2 = plot(t,trend;
+              yguide = dlabels[2], xguide = "", title = "", xticks = false,
+              ytickfont, yguidefont,
+              bottom_margin = -5Plots.mm,
+              legend = false, grid = false)
+
+    p2 = plot!(rect(sbw, hr, sbx, minimum(trend));
+               seriescolor = :grey,
+               linewidth = 0,
+               label = nothing)
+
+    p3 = plot(t,seasonality;
+              yguide = dlabels[3], xguide = "", title = "", xticks = false,
+              ytickfont, yguidefont, seriestype = :sticks,
+              bottom_margin = -5Plots.mm,
+              legend = false, grid = false)
+
+    p3 = plot!(rect(sbw, hr, sbx, minimum(seasonality));
+               seriescolor = :grey,
+               linewidth = 0,
+               label = nothing)
+
+    p4 = plot(t,remainder;
+              yguide = dlabels[4], xguide = "", 
+              xtickfont, ytickfont, yguidefont, seriestype = :sticks,
+              legend = false, grid = false,
+              kw...,
+              title = "")
+              
+    p4 = plot!(rect(sbw , hr, sbx, minimum(remainder));
+               seriescolor = :grey,
+               linewidth = 0,
+               label = nothing)
+
+    plot(p1,p2,p3,p4; layout)
 
 end
 
