@@ -23,21 +23,23 @@ A CF object and optional plot
 
 # Examples
 ```julia-repl
-julia> x = rand(100);
+x = rand(100);
 acf(x; type="cor");
-acf(x; type="cor", plot=false);
+acf(x; type="cor", plot=false)
 20-element Vector{Float64}:
  -0.07114015325321181
  -0.045271910181007916
   0.19300008480298597
+  [...]
 ```
 """
 function acf(x::AbstractVector{<:Real};
              type::String = "cor",
              lag::Integer = Integer(ceil(10*log10(length(x)))),
              alpha::Tuple{AbstractFloat,AbstractFloat} = (0.95,0.99),
-             plot::Bool = true)
+             plot::Bool = true,
+             kw...)
 
-    ccf(x,x; type, lag, alpha, plot)
+    ccf(x,x; type, lag, alpha, plot, kw...)
     
 end

@@ -25,7 +25,7 @@ A CF object
 
 # Examples
 ```julia-repl
-julia> x = rand(100);
+x = rand(100);
 pacf(x);
 pacf(x; plot=false)
 20×2 Matrix{Float64}:
@@ -38,7 +38,8 @@ function pacf(x::AbstractVector{<:Real};
               type::String = "stepwise-real",
               lag::Integer = Integer(ceil(10*log10(length(x)))),
               alpha::Tuple{Real,Real} = (0.95,0.99),
-              plot::Bool = true)
+              plot::Bool = true,
+              kw...)
 
     N = length(x)
     @assert type in  ["stepwise","real","stepwise-real"] "The options for `type` are `stepwise`, `real` and `stepwise-real`"
@@ -66,24 +67,20 @@ function pacf(x::AbstractVector{<:Real};
 
     if (type::String == "stepwise") 
         pac = pacf_stepwise(x; lag, alpha)
-        plot && display(cf_gr((cres=pac, N=N, type="pacf_stepwise", lag, alpha, ci, auto=true)))
+        plot && display(cf_gr((cres=pac, N=N, type="pacf_stepwise", lag, alpha, ci, auto=true, kw...)))
         return pac
-        #return CCF(pac, N, "pacf_stepwise", lag, alpha, ci, true, call)
     end
 
     if (type::String == "real") 
-        pac = pacf_real(x; ag, alpha)
-        plot && display(cf_gr((cres=pac, N=N, type="pacf_real", lag, alpha, ci, auto=true)))
+        pac = pacf_real(x; lag, alpha)
+        plot && display(cf_gr((cres=pac, N=N, type="pacf_real", lag, alpha, ci, auto=true, kw...)))
         return pac
-        #return CCF(pac, N, "pacf_real", lag, alpha, ci, true, call)
     end
 
     if type::String == "stepwise-real"
         pacs = pacf_stepwise(x; lag, alpha)
         pacr = pacf_real(x; lag, alpha)
-        plot && display(cf_gr((cres=hcat(pacs, pacr), N=N, type="pacf_stepwise-real", lag, alpha, ci, auto=true)))
-        # return CCF(hcat(pacs, pacr),
-        #            N, "pacf_stepwise-real", lag, alpha, ci, true, call)
+        plot && display(cf_gr((cres=hcat(pacs, pacr), N=N, type="pacf_stepwise-real", lag, alpha, ci, auto=true, kw...)))
         return hcat(pacs, pacr)
     end
 
