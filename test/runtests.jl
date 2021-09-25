@@ -8,10 +8,20 @@ using Test
     #splot
     px = splot(x;title="SPlot")
     @test size(px) == (9,12)
-    splot(x,"day";title="SPlot"); @test true
-    splot(x,"quarter",title="SPlot"); @test true
-    splot(x,"month",title="SPlot"); @test true
-    splot(x,10,title="SPlot"); @test true
-    splot(x,10,title="SPlot",plot=false); @test true
+
+    px = splot(x,"day";title="SPlot")
+    @test size(px) == (15,17)
+    
+    px = splot(x,"quarter",title="SPlot")
+    @test size(px) == (25,4)
+    
+    splot(x,"month",title="SPlot")
+    @test size(px) == (9,12)
+    
+    splot(x,10,title="SPlot")
+    @test size(px) == (10,10)
+    
+    splot(x,10,title="SPlot",plot=false)
+    @test size(px) == (10,10)
     
 end
