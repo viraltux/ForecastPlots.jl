@@ -6,7 +6,7 @@ using Test
     x = rand(100)
 
     #splot
-    # px = splot(x;title="SPlot")
+    #px = splot(x;title="SPlot")
     # @test size(px) == (9,12)
 
     # px = splot(x,"day";title="SPlot")
@@ -21,7 +21,7 @@ using Test
     # splot(x,10,title="SPlot")
     # @test size(px) == (10,10)
     
-    splot(x,10,title="SPlot",plot=false)
+    px = splot(x,10,title="SPlot",plot=false)
     @test size(px) == (10,10)
     
 end
