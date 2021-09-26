@@ -12,5 +12,19 @@ Collection of plot functionalities for time series analysis. The available plots
 
 <img src="./docs/src/images/candle.png">
 
+## Examples
+
+```julia
+using ForecastPlots
+using RCall, Smoothers
+
+R"x = as.numeric(co2)"
+@rget x
+
+dplot(stl(x,12))
+```
+
+<img src="./docs/src/images/candle.png">
+	
 [![Build Status](https://github.com/viraltux/ForecastPlots.jl/workflows/CI/badge.svg)](https://github.com/viraltux/ForecastPlots.jl/actions)
 [![Coverage](https://codecov.io/gh/viraltux/ForecastPlots.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/viraltux/ForecastPlots.jl)
