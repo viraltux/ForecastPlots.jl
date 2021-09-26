@@ -3,12 +3,6 @@ module ForecastPlots
 using Distributions, LinearAlgebra, Statistics
 using Plots, Dates
 
-include("splot.jl")
-export splot
-
-include("dplot.jl")
-export dplot
-
 include("acf.jl")
 include("ccf.jl")
 include("pacf.jl")
@@ -17,9 +11,14 @@ export acf, ccf, pacf
 include("candle.jl")
 export candle
 
+include("dplot.jl")
+export dplot
+
 include("fplot.jl")
 export fplot 
 
+include("splot.jl")
+export splot
 
 """
 Package: ForecastPlots

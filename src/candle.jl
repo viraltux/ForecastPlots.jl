@@ -19,9 +19,11 @@ Candle plot
 ```julia-repl
 using MarketData
 
-x = values(yahoo(:INTC))[:,1:4][1001:1160,:]
-candle(x)
-candle(x,now()-Day(30):Day(1):now(); colors=(:white,:black), title = "INTC")
+x = yahoo(:INTC)
+last_month_intc = values(x)[end-30:end,1:4]
+candle(last_month_intc)
+candle(last_month_intc,timestamp(x)[end-30:end])
+candle(last_month_intc,timestamp(x)[end-30:end]; colors=(:white,:black), title = "INTC")
 ```
 """
 function candle(x::Matrix{<:Real},t=1:size(x,1); colors=(:green,:red), kw...)
