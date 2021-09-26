@@ -24,7 +24,7 @@ R"x = as.numeric(co2)"
 dplot(stl(x,12))
 ```
 
-<img src="./docs/src/images/candle.png">
+<img src="./docs/src/images/dplot-stl.png">
 	
 [![Build Status](https://github.com/viraltux/ForecastPlots.jl/workflows/CI/badge.svg)](https://github.com/viraltux/ForecastPlots.jl/actions)
 [![Coverage](https://codecov.io/gh/viraltux/ForecastPlots.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/viraltux/ForecastPlots.jl)
